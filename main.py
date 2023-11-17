@@ -1,16 +1,19 @@
-# This is a sample Python script.
-
-# Press Maj+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import os
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def extract_president_names(file_names):
+    president_names = set()
+    for file_name in file_names:
+        # Extract president name from file name
+        parts = file_name.split('_')
+        if len(parts) >= 3:
+            president_names.add(parts[2])
+
+    return list(president_names)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# Example usage:
+directory = "./speeches"
+files_names = os.listdir(directory)
+president_names = extract_president_names(files_names)
+print("President Names:", president_names)
