@@ -7,7 +7,7 @@ def extract_president_names(file_names):
         name = parts[1]
         if ord(name[-1]) >= 48 and ord(name[-1]) <= 57:
             name = ''
-            for i in range(len(parts[1][-1])-1):
+            for i in range(len(parts[1])-1):
                 name += str(parts[1][i])
         president_names.add(name)
 
