@@ -1,6 +1,7 @@
 import os
 
 def extract_president_names(file_names):
+    '''returns a list of the names of each president from the speech file'''
     president_names = set()
     for file_name in file_names:
         parts = file_name.split('_')
