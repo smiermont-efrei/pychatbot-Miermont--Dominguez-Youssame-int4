@@ -79,7 +79,7 @@ def count_word_occurrences(text):
 
 
 
-
+# Fonction 4
 def calculate_idf(directory):
     """Get the list of file names in the directory"""
     num_documents = len(speech_files)
