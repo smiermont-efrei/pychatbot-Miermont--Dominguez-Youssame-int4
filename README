@@ -6,3 +6,5 @@ Joy Youssame
 [dependencies to be installed]
 
 [list of known bugs]
+
+Some characters like 'é', 'à', 'ç' and 'ù' are displayed as 'Ã©', 'Ã ', 'Ã§' and 'Ã¹' respectively.
