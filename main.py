@@ -1,17 +1,16 @@
+import math
 import os
-import string
-from unidecode import unidecode
-from math import *
 from collections import *
 
-#Fonction 1
+
+# Function 1
 def extract_president_names(file_names):
     """returns a list of the names of each president from the speech file"""
     president_names = set()
     for file_name in file_names:
         parts = file_name.split('_')
         name1 = ''
-        for i in range(len(parts[1])-4):
+        for i in range(len(parts[1]) - 4):
             name1 += parts[1][i]
 
         if 48 <= ord(name1[-1]) <= 57:
@@ -24,116 +23,148 @@ def extract_president_names(file_names):
 
     return list(president_names)
 
+
 speeches_directory = "./speeches-20231110"
 files_names = os.listdir(speeches_directory)
 president_names = extract_president_names(files_names)
 print("President Names:", president_names)
 
 
-#fonction 2
-def clean_text(file_path: str, output_directory: str):
+# Function 2
+def clean_text(path, speech):
     """converts the speeches to lowercase and removes the punctuation"""
-    with open(file_path, "r") as file:
-        content = file.read()
-        content_no_accents = unidecode(str(content))
+    with open(path, 'r') as f:
+        text = f.read()
+    text = text.lower()
 
-        content_lower = content_no_accents.lower()
-    #print(content_lower)
+    #tr = str.maketrans('', '', string.punctuation)
+    #text = text.translate(tr)
+    punctuation = (',', "'", ";", ':', '!', '?', '-', '_', '(', ')', '/')
+    text1 = ''
+    for word in text:
+        for char in word:
+            if char not in punctuation:
+                text1 += char
+            else :
+                text1 += ' '
+    text = text1
 
-    translator = str.maketrans('', '', string.punctuation)
-    content_no_punct = content_lower.translate(translator)
-    #print(content_no_punct)
+    outdir = 'cleaned' + "\ " + speech
+    if not os.path.exists('./cleaned'):
+        os.makedirs('cleaned')
 
-    if not os.path.exists(output_directory):
-        os.makedirs(output_directory)
-
-#    sepa = "/"
-#    p = [output_directory, os.path.basename(file_path)]
-#    cleaned_file_path = sepa.join(p)
-    #print(cleaned_file_path)
-
-    #with open(cleaned_file_path, 'w') as cleaned_file:
-    with open(output_directory, 'w') as cleaned_file:
-        cleaned_file.write(content_no_punct)
-
-    return
+    out = open(outdir, 'w')
+    out.write(text)
 
 
-# We fill speech_files to make it a list of all speech files
-speech_files = []
-for file in os.listdir(speeches_directory):
-    if file.endswith('.txt'):
-        speech_files.append(file)
+nb_docs = 0
+for speech in os.listdir(speeches_directory):
+    path = speeches_directory + '/' + speech
+    clean_text(path, speech)
+    nb_docs += 1
 
 
-# We make a path for each speech to use it as the input directory, and cleaned_directory is the path the 'cleaned' files will be put into
-sepa = "/"
-lisdirectory = []
-clean_out = ''
-cleaned_directory = "./cleaned"
-for speech_file in speech_files:
-    lisdirectory = [speeches_directory, speech_file]
-    speech_file_path = sepa.join(lisdirectory)
-    clean_out = cleaned_directory + '/' + speech_file
-    #print(clean_out)
-    clean_text(speech_file_path, cleaned_directory)
+# Function 3
 
-'''
-# Fonction 3
 def count_word_occurrences(text):
+    # ''counts the number of times a word is present in a text''
     words = text.split()
     word_counts = Counter(words)
     return word_counts
 
+speeches_directory = 'cleaned'
 
-#text_example = "this is an example text example text is here"
-#word_occurrences = count_word_occurrences(text_example)
-#print("Word Occurrences:", word_occurrences)
+# Function 4
+def calculate_tf(path):
+    '''Returns the Term frequency of each word in a text'''
+    words = {}        # This will store the words and their frequency
+    with open(path, 'r') as file:
+        content = file.read()
+    speech = content.split()
+
+    for word in speech:         # Puts every word into the words dictionary and initializes them at 0
+        if word not in words:
+            words[word] = 0
+
+    for word in speech:      # Now we go through the speech again and add 1 to the words if they are in the speech
+        if word in words:
+            words[word] += 1
+    return words
 
 
+for speech in os.listdir(speeches_directory):
+    path = speeches_directory + '/' + speech
+    #print(calculate_tf(path))
 
-# Fonction 4
-def calculate_idf(directory):
-    """Get the list of file names in the directory"""
-    num_documents = len(speech_files)
-    idf_scores = {}
-    for file_name in speech_files:
-        file_path = path.join(directory, file_name)
 
-        with open(file_path, 'r') as file:
+# Function 5
+def in_doc(directory):
+    """Returns a dictionary with the number of speeches each word is present in, used in calculate_idf()"""
+    Doc = {}        # This will store the number of documents each word is present in
+    Speech = []     # Here we have each word of a speech
+    nb_docs = 8
+    for speech in os.listdir(directory):
+        path = directory + '/' + speech
+        L = []
+        with open(path, 'r') as file:
             content = file.read()
         words = content.split()
 
         for word in words:
-            idf_scores[word] = idf_scores.get(word, 0) + 1
+            if word not in L:
+                L.append(word)
+        Speech.append(L)
+    for i in range(nb_docs):      # We are going to put every word into Doc and give to each a value of 0
+        for j in range(len(Speech[i])):
+            if Speech[i][j] not in Doc:
+                Doc[Speech[i][j]] = 0
 
-    for word, count in idf_scores.items():
-        idf_scores[word] = math.log(num_documents / count)
+    for i in range(nb_docs):      # Now we go through every speech list again and add 1 to the words if they are in the speech
+        for j in range(len(Speech[i])):
+            if Speech[i][j] in Doc:
+                Doc[Speech[i][j]] += 1
+    return Doc
 
+
+# Function 6
+def calculate_idf(path):
+    """Returns a dictionary with the idf score of each word for a given speech"""
+    occurence_numbers = in_doc('cleaned')
+    nb_docs = 8
+    idf_scores = {}
+    with open(path, 'r') as file:
+        content = file.read()
+    words = content.split()
+    for word in words:
+        idf_scores[word] = 0
+    for word, nb in idf_scores.items():
+        idf_scores[word] = math.log((nb_docs/occurence_numbers[word]) + 1)
     return idf_scores
 
 
-speeches_directory = "./cleaned"
-idf_scores = calculate_idf(speeches_directory)
-print("IDF Scores:", idf_scores)
+for speech in os.listdir(speeches_directory):
+    path = speeches_directory + '/' + speech
+    #print("IDF scores:", calculate_idf(path))
+    #print(in_doc('cleaned'))
 
-'''
-'''
-def calculate_tf_idf_matrix(directory):
-    file_names = [file for file in os.listdir(directory) if file.endswith('.txt')]
 
-    idf_scores = calculate_idf(directory)
+# Function 7
+def calculate_tf_idf_matrix_all(directory):
+    file_names = os.listdir(directory)
+
+    for speech in file_names:
+        path = directory + '/' + speech
+    idf_scores = calculate_idf(path)
 
     tf_idf_matrix = []
 
-    for file_name in file_names:
-        file_path = os.path.join(directory, file_name)
+    for speech in file_names:
+        file_path = os.path.join(directory, speech)
 
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'r') as file:
             content = file.read()
 
-        word_occurrences = count_word_occurrences(content)
-
+        word_occurrences = calculate_tf(file_path)
         tf_idf_scores = {}
         for word, tf in word_occurrences.items():
             tf_idf_scores[word] = tf * idf_scores.get(word, 0)
@@ -142,11 +173,8 @@ def calculate_tf_idf_matrix(directory):
 
     return tf_idf_matrix
 
-speeches_directory = "./cleaned"
-tf_idf_matrix = calculate_tf_idf_matrix(speeches_directory)
-print("TF-IDF Matrix:", tf_idf_matrix)
 
-#Fonction 6
+#Function 8
 def display_least_important_words(tf_idf_matrix):
     least_important_words = set()
 
@@ -159,12 +187,11 @@ def display_least_important_words(tf_idf_matrix):
 
     # Display the list of least important words
     print("Least Important Words:", least_important_words)
+    return least_important_words
+#display_least_important_words(tf_idf_matrix)
 
-speeches_directory = "./cleaned"
-tf_idf_matrix = calculate_tf_idf_matrix(speeches_directory)
-display_least_important_words(tf_idf_matrix)
 
-#Fonction 7
+#Function 9
 def display_highest_tfidf_words(tf_idf_matrix):
     highest_tfidf_words = {}
 
@@ -178,40 +205,70 @@ def display_highest_tfidf_words(tf_idf_matrix):
 
     print("Word(s) with Highest TF-IDF Score:", highest_tfidf_words)
 
-speeches_directory = "./cleaned"
-tf_idf_matrix = calculate_tf_idf_matrix(speeches_directory)
-display_highest_tfidf_words(tf_idf_matrix)
 
-# Fonction 8
+#display_highest_tfidf_words(tf_idf_matrix)
 
-def calculate_tf_idf_matrix_with_presidents(directory, president_names):
 
+
+# Function 10
+def calculate_tf_idf_matrix_with_presidents(directory, president):
+    """Returns a tf-idf matrix of each speech for a given president in a given directory"""
+    idf_scores = []                                 # List of idf value dictionaries
+    for speech in os.listdir(directory):
+        if president in speech:
+            path = directory + '/' + speech
+            idf_scores.append(calculate_idf(path))
+
+    #for i in range(len(idf_scores)):
+        #print(idf_scores[i])
+
+    tf_idf_scores = {}
     tf_idf_matrix = []
 
-    for file_name, president in zip(file_names, president_names):
-        file_path = os.path.join(directory, file_name)
+    for speech in os.listdir(directory):
+        if president in speech:
+            file_path = os.path.join(directory, speech)
+            with open(file_path, 'r') as file:
+                content = file.read()
 
-        # Read the content of the file
-        with open(file_path, 'r') as file:
-            content = file.read()
+            word_occurrences = count_word_occurrences(content)       # Is a dictionary of words and their number of occurence
+            #print(word_occurrences)
 
-        word_occurrences = count_word_occurrences(content)
-
-        tf_idf_scores = {}
-        for word, tf in word_occurrences.items():
-            tf_idf_scores[word] = tf * idf_scores.get(word, 0)
-
-        tf_idf_matrix.append({'president': president, 'tf_idf_scores': tf_idf_scores})
+            for i in range(len(idf_scores)):
+                for word, tf in word_occurrences.items():
+                    tf_idf_scores[word] = tf * idf_scores[i].get(word, 0)
+            tf_idf_matrix.append(tf_idf_scores)
 
     return tf_idf_matrix
 
-# Fonction 8.1
-def most_repeated_words_by_president(tf_idf_matrix, president_name):
-    president_documents = [doc['tf_idf_scores'] for doc in tf_idf_matrix if doc['president'] == president_name]
+
+#for president in extract_president_names(os.listdir(speeches_directory)):
+#    calculate_tf_idf_matrix_presidents(speeches_directory, president)
+
+#tf_idf_matrix = calculate_tf_idf_matrix_all(speeches_directory)
+#print(tf_idf_matrix)
+
+
+
+# Function 10.1
+def most_repeated_words_by_president(directory, president_name):
+    """Returns the most repeated word said by a given president"""
+    #president_documents = [doc['tf_idf_scores'] for doc in tf_idf_matrix if doc['president'] == president_name]
+    # Donc president_documents est une liste des matrices tf-idf des discours d'un président donné
+
+    president_documents = calculate_tf_idf_matrix_with_presidents(directory, president_name)
+    '''
+    for speech in os.listdir(directory):    
+        if president in speech:
+            file_path = os.path.join(directory, speech)
+            with open(file_path, 'r') as file:
+                content = file.read()
+            president_documents.append(content)
 
     if not president_documents:
         print(f"No documents found for President {president_name}")
         return
+'''
 
     combined_scores = {}
     for document in president_documents:
@@ -221,29 +278,83 @@ def most_repeated_words_by_president(tf_idf_matrix, president_name):
     most_repeated_word = max(combined_scores, key=combined_scores.get)
     most_repeated_score = combined_scores[most_repeated_word]
 
-    print(f"Most Repeated Word(s) by President {president_name}:")
-    print(f"Word: {most_repeated_word}, TF-IDF Score: {most_repeated_score}")
+    #print(f"Most Repeated Word by President {president_name}:")
+    #print(f"Word: {most_repeated_word}, TF-IDF Score: {most_repeated_score}")
+
 
 # Example usage:
-speeches_directory = "./cleaned"
-president_names = ['Chirac', 'Giscard d\'Estaing', 'Hollande', 'Mitterrand', 'Macron', 'Sarkozy']
-tf_idf_matrix = calculate_tf_idf_matrix_with_presidents(speeches_directory, president_names)
-most_repeated_words_by_president(tf_idf_matrix, 'Chirac')
+#for president in extract_president_names(os.listdir(speeches_directory)):
+#    tf_idf_matrix = calculate_tf_idf_matrix_with_presidents(speeches_directory, president)
+#    most_repeated_words_by_president(speeches_directory, president)
 
-# Fonction 9
 
-def calculate_tf_idf_matrix_with_target_word(directory, president_names, target_word):
+# Function 11
+def word_frequence_comparison(directory, target_word):
+    """Returns a list of who says the target word more in its speeches."""  #Doesn't work
+    i = 0
+    L = []
+    for speech in os.listdir(speeches_directory):
+        path = speeches_directory + '/' + speech
+        with open(path, 'r') as f:
+            content = f.read()
+        #content =
+        matrix = calculate_tf(path)
+        for word, n in matrix.items():
+            w = []
+            if word == target_word:
+                pres_names = os.listdir(speeches_directory)
+                w.append(pres_names[i])
+                w.append(matrix[target_word])
+                L.append(w)
+        i += 1
 
+    numbers = '0123456789'
+    for i in range(len(L)):
+        parts = L[i][0].split('_')
+        name1 = ''
+        name = ''
+        for j in range(len(parts[1]) - 4):
+            name1 += parts[1][j]
+
+        if name1[-1] in numbers:
+            name = ''
+            for k in range(len(name1) - 1):
+                name += str(name1[k])
+        else:
+            name = name1
+        L[i][0] = name
+        #print(L[i])
+    L2 = []
+    m2 = []
+    b = False
+    for i in range(len(L)-1):
+        m2 = []
+        for n in L2:
+            if L[i][0] == n:
+                b = True
+        if b is False:
+            m2.append(L[i][0])
+        if L[i][0] == L[i+1][0]:
+            m2.append(L[i][1] + L[i+1][1])
+        else:
+            m2.append(L[i][1])
+        L2.append(m2)
+    L2.append(L[-1])
+    print(L2)
+
+
+
+
+def calculate_tf_idf_matrix_with_target_word(directory, president, target_word):
     tf_idf_matrix = []
-
-    for file_name, president in zip(file_names, president_names):
-        file_path = os.path.join(directory, file_name)
+    for speech in os.listdir(directory):
+        file_path = os.path.join(directory, speech)
 
         with open(file_path, 'r') as file:
             content = file.read()
 
         word_occurrences = count_word_occurrences(content)
-
+        idf_scores = calculate_idf(file_path)
         tf_idf_scores = {}
         for word, tf in word_occurrences.items():
             tf_idf_scores[word] = tf * idf_scores.get(word, 0)
@@ -253,12 +364,15 @@ def calculate_tf_idf_matrix_with_target_word(directory, president_names, target_
 
     return tf_idf_matrix
 
-# Fonction 9.1
-# the parameters in the prevoius function has been changed to add a parameter to this function to specify the target word
-def president_speaking_about_nation_the_most(tf_idf_matrix):
+#for president in extract_president_names(os.listdir(speeches_directory)):
+#word_frequence_comparison(speeches_directory, 'nation')
+
+# Function 11.1
+# the parameters in the previous function has been changed to add a parameter to this function to specify the target word
+def president_speaking_about_nation_the_most(tf_idf_matrix, president_name):
     combined_counts = {}
     for document in tf_idf_matrix:
-        president = document['president']
+        president = document[president_name]
         target_word_count = document['target_word_count']
         combined_counts[president] = combined_counts.get(president, 0) + target_word_count
 
@@ -269,21 +383,25 @@ def president_speaking_about_nation_the_most(tf_idf_matrix):
     for president in presidents_with_max_count:
         print(f"{president}: {max_count} occurrences")
 
+
 # Example usage:
 speeches_directory = "./cleaned"
 president_names = ['Chirac', 'Giscard d\'Estaing', 'Hollande','Mitterrand', 'Macron', 'Sarkozy']
-target_word = 'Nation'
-tf_idf_matrix_with_nation = calculate_tf_idf_matrix_with_target_word(speeches_directory, president_names, target_word)
-president_speaking_about_nation_the_most(tf_idf_matrix_with_nation)
 
-# Fonction 10
-def calculate_tf_idf_matrix_with_first_mention(directory, president_names, target_words):
+tf_idf_matrix_with_nation = calculate_tf_idf_matrix_with_target_word(speeches_directory, president_names, 'nation')
+#for president in extract_president_names(os.listdir(speeches_directory)):
+    #print(president_speaking_about_nation_the_most(tf_idf_matrix_with_nation, president))
+
+
+# Function 12
+def calculate_tf_idf_matrix_with_first_mention(directory, president, target_words):
 
     tf_idf_matrix = []
 
-    for file_name, president in zip(file_names, president_names):
-        file_path = os.path.join(directory, file_name)
+    for speech in os.listdir(directory):
+        file_path = os.path.join(directory, speech)
 
+        idf_scores = calculate_idf(file_path)
         with open(file_path, 'r') as file:
             content = file.read()
 
@@ -301,7 +419,9 @@ def calculate_tf_idf_matrix_with_first_mention(directory, president_names, targe
         tf_idf_matrix.append({'president': president, 'tf_idf_scores': tf_idf_scores, 'first_mentions': first_mentions})
 
     return tf_idf_matrix
-#Fonction 10.1
+    
+
+#Function 12.1
 def first_president_to_mention_climate_or_ecology(tf_idf_matrix, target_words):
     first_mentions = {}
 
@@ -318,6 +438,7 @@ def first_president_to_mention_climate_or_ecology(tf_idf_matrix, target_words):
     for target_word, (president, tf_idf_score) in first_mentions.items():
         print(f"The first president to talk about '{target_word}': {president} (TF-IDF Score: {tf_idf_score})")
 
+
 # Example usage:
 speeches_directory = "./cleaned"
 president_names = ['Chirac', 'Giscard d\'Estaing', 'Hollande' ,'Mitterrand', 'Macron', 'Sarkozy']
@@ -325,7 +446,8 @@ target_words = ['climate', 'ecology']
 tf_idf_matrix_with_first_mention = calculate_tf_idf_matrix_with_first_mention(speeches_directory, president_names, target_words)
 first_president_to_mention_climate_or_ecology(tf_idf_matrix_with_first_mention, target_words)
 
-#Fonction 11
+
+#Function 13
 def words_mentioned_by_all_presidents(tf_idf_matrix, unimportant_words):
     common_words = set(tf_idf_matrix[0]['tf_idf_scores'].keys())
 
@@ -348,7 +470,7 @@ common_words = words_mentioned_by_all_presidents(tf_idf_matrix_without_unimporta
 print("Words Mentioned by All Presidents (Except Unimportant Words):", common_words)
 
 
-#Main Programe
+#Main Program
 
 def main():
     speeches_directory = "./cleaned"
@@ -395,6 +517,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-'''
