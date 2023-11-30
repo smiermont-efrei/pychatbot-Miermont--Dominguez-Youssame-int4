@@ -276,7 +276,6 @@ def most_repeated_words_by_president(directory, president_name):
     #print(f"Most Repeated Word by President {president_name}:")
     #print(f"Word: {most_repeated_word}, TF-IDF Score: {most_repeated_score}")
 
-
 # Example usage:
 #for president in extract_president_names(os.listdir(speeches_directory)):
 #    tf_idf_matrix = calculate_tf_idf_matrix_with_presidents(speeches_directory, president)
