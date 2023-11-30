@@ -33,19 +33,19 @@ print("President Names:", president_names)
 # Function 2
 def clean_text(path, speech):
     """converts the speeches to lowercase and removes the punctuation"""
-    with open(path, 'r') as f:
+    with (open(path, 'r', encoding='utf-8')as f):
         text = f.read()
     text = text.lower()
 
     #tr = str.maketrans('', '', string.punctuation)
     #text = text.translate(tr)
-    punctuation = (',', "'", ";", ':', '!', '?', '-', '_', '(', ')', '/')
+    punctuation = (',', "'", ";", ':', '!', '?', '-', '_', '(', ')', '/', '.')
     text1 = ''
     for word in text:
         for char in word:
             if char not in punctuation:
                 text1 += char
-            else :
+            else:
                 text1 += ' '
     text = text1
 
@@ -53,7 +53,7 @@ def clean_text(path, speech):
     if not os.path.exists('./cleaned'):
         os.makedirs('cleaned')
 
-    out = open(outdir, 'w')
+    out = open(outdir, 'w', encoding='utf-8')
     out.write(text)
 
 
@@ -78,7 +78,7 @@ speeches_directory = 'cleaned'
 def calculate_tf(path):
     '''Returns the Term frequency of each word in a text'''
     words = {}        # This will store the words and their frequency
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
         content = file.read()
     speech = content.split()
 
@@ -106,7 +106,7 @@ def in_doc(directory):
     for speech in os.listdir(directory):
         path = directory + '/' + speech
         L = []
-        with open(path, 'r') as file:
+        with open(path, 'r', encoding='utf-8') as file:
             content = file.read()
         words = content.split()
 
@@ -132,7 +132,7 @@ def calculate_idf(path):
     occurence_numbers = in_doc('cleaned')
     nb_docs = 8
     idf_scores = {}
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
         content = file.read()
     words = content.split()
     for word in words:
@@ -161,7 +161,7 @@ def calculate_tf_idf_matrix_all(directory):
     for speech in file_names:
         file_path = os.path.join(directory, speech)
 
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
 
         word_occurrences = calculate_tf(file_path)
@@ -228,7 +228,7 @@ def calculate_tf_idf_matrix_with_presidents(directory, president):
     for speech in os.listdir(directory):
         if president in speech:
             file_path = os.path.join(directory, speech)
-            with open(file_path, 'r') as file:
+            with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
 
             word_occurrences = count_word_occurrences(content)       # Is a dictionary of words and their number of occurence
@@ -261,7 +261,7 @@ def most_repeated_words_by_president(directory, president_name):
     for speech in os.listdir(directory):    
         if president in speech:
             file_path = os.path.join(directory, speech)
-            with open(file_path, 'r') as file:
+            with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
             president_documents.append(content)
 
@@ -295,7 +295,7 @@ def word_frequence_comparison(directory, target_word):
     L = []
     for speech in os.listdir(speeches_directory):
         path = speeches_directory + '/' + speech
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             content = f.read()
         #content =
         matrix = calculate_tf(path)
@@ -350,7 +350,7 @@ def calculate_tf_idf_matrix_with_target_word(directory, president, target_word):
     for speech in os.listdir(directory):
         file_path = os.path.join(directory, speech)
 
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
 
         word_occurrences = count_word_occurrences(content)
@@ -402,7 +402,7 @@ def calculate_tf_idf_matrix_with_first_mention(directory, president, target_word
         file_path = os.path.join(directory, speech)
 
         idf_scores = calculate_idf(file_path)
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
 
         word_occurrences = count_word_occurrences(content)
