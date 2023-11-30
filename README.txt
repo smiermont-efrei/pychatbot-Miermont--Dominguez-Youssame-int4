@@ -1,0 +1,11 @@
+Sophie Miermont--Dominguez
+Joy Youssame
+
+[instructions]
+
+dependencies to be installed : none
+
+list of known bugs:
+
+- Functions 11 to the end don't work properly yet
+- the main program found at the end hasn't been properly tested yet
