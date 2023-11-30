@@ -37,8 +37,6 @@ def clean_text(path, speech):
         text = f.read()
     text = text.lower()
 
-    #tr = str.maketrans('', '', string.punctuation)
-    #text = text.translate(tr)
     punctuation = (',', "'", ";", ':', '!', '?', '-', '_', '(', ')', '/', '.')
     text1 = ''
     for word in text:
@@ -218,9 +216,6 @@ def calculate_tf_idf_matrix_with_presidents(directory, president):
         if president in speech:
             path = directory + '/' + speech
             idf_scores.append(calculate_idf(path))
-
-    #for i in range(len(idf_scores)):
-        #print(idf_scores[i])
 
     tf_idf_scores = {}
     tf_idf_matrix = []
