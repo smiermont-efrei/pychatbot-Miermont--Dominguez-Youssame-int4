@@ -27,7 +27,7 @@ def extract_president_names(file_names):
 speeches_directory = "./speeches-20231110"
 files_names = os.listdir(speeches_directory)
 president_names = extract_president_names(files_names)
-print("President Names:", president_names)
+#print("President Names:", president_names)
 
 
 # Function 2
@@ -204,7 +204,7 @@ def display_highest_tfidf_words(tf_idf_matrix):
     print("Word(s) with Highest TF-IDF Score:", highest_tfidf_words)
 
 
-#display_highest_tfidf_words(tf_idf_matrix)
+#display_highest_tfidf_words(calculate_tf_idf_matrix_all(speeches_directory))
 
 
 
@@ -226,25 +226,27 @@ def calculate_tf_idf_matrix_with_presidents(directory, president):
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
 
-            word_occurrences = count_word_occurrences(content)       # Is a dictionary of words and their number of occurence
+            #word_occurrences = count_word_occurrences(content)       # It's a dictionary of words and their number of occurence
+            word_occurrences = calculate_tf(file_path)
             #print(word_occurrences)
 
             for i in range(len(idf_scores)):
                 for word, tf in word_occurrences.items():
                     tf_idf_scores[word] = tf * idf_scores[i].get(word, 0)
+                    tf_idf_scores[word] = '{:.4f}'.format(tf_idf_scores[word])
             tf_idf_matrix.append(tf_idf_scores)
 
     return tf_idf_matrix
 
 
-#for president in extract_president_names(os.listdir(speeches_directory)):
-#    calculate_tf_idf_matrix_presidents(speeches_directory, president)
+for president in extract_president_names(os.listdir(speeches_directory)):
+    #print(calculate_tf_idf_matrix_with_presidents(speeches_directory, president))
 
-#tf_idf_matrix = calculate_tf_idf_matrix_all(speeches_directory)
+tf_idf_matrix = calculate_tf_idf_matrix_all(speeches_directory)
 #print(tf_idf_matrix)
 
 
-
+'''
 # Function 10.1
 def most_repeated_words_by_president(directory, president_name):
     """Returns the most repeated word said by a given president"""
@@ -253,16 +255,16 @@ def most_repeated_words_by_president(directory, president_name):
 
     president_documents = calculate_tf_idf_matrix_with_presidents(directory, president_name)
     '''
-    for speech in os.listdir(directory):    
-        if president in speech:
-            file_path = os.path.join(directory, speech)
-            with open(file_path, 'r', encoding='utf-8') as file:
-                content = file.read()
-            president_documents.append(content)
+#    for speech in os.listdir(directory):
+#        if president in speech:
+#            file_path = os.path.join(directory, speech)
+#            with open(file_path, 'r', encoding='utf-8') as file:
+#                content = file.read()
+#            president_documents.append(content)
 
-    if not president_documents:
-        print(f"No documents found for President {president_name}")
-        return
+#    if not president_documents:
+#        print(f"No documents found for President {president_name}")
+#        return
 '''
 
     combined_scores = {}
@@ -511,3 +513,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+'''
