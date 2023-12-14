@@ -573,4 +573,4 @@ def clean_question(question):
     return lquestion
 
 # Testing the function :
-print(clean_question("Comment t'appelles-tu ?"))
+#print(clean_question("Comment t'appelles-tu ?"))
