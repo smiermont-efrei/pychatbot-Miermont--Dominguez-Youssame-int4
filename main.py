@@ -153,8 +153,8 @@ for speech in os.listdir(speeches_directory):
 
 # Il va nous falloir un dictionnaire tf et un dictionnaire idf tel que [tf[de]: [1,2,3,4, les tf dans chaque document],...] et [idf[de]: [1,2,3,4, les idf dans chaque document],...] ensuite on fait
 
-#tf_idf = {}
-#for word in [dictionnaire de tous les mots]:
+# tf_idf = {}
+# for word in [dictionnaire de tous les mots]:
 #    tf_idf[word] = tf[word]*idf[word]          pour un tf_idf général
 
 # Ensuite
@@ -505,10 +505,10 @@ president_names = ['Chirac', 'Giscard d\'Estaing', 'Hoolande', 'Mitterrand', 'Ma
 unimportant_words = {'the', 'and', 'to', 'of', 'in', 'a', 'is', 'it', 'that', 'with', 'for', 'on', 'this', 'as', 'by', 'an'}
 
 # Calculates the  TF-IDF matrix with unimportant words removed
-tf_idf_matrix_without_unimportant = calculate_tf_idf_matrix_with_target_word(speeches_directory, president_names, 'Nation')
-common_words = words_mentioned_by_all_presidents(tf_idf_matrix_without_unimportant, unimportant_words)
+#tf_idf_matrix_without_unimportant = calculate_tf_idf_matrix_with_target_word(speeches_directory, president_names, 'Nation')
+#common_words = words_mentioned_by_all_presidents(tf_idf_matrix_without_unimportant, unimportant_words)
 
-print("Words Mentioned by All Presidents (Except Unimportant Words):", common_words)
+#print("Words Mentioned by All Presidents (Except Unimportant Words):", common_words)
 
 
 # Main Program
@@ -596,6 +596,7 @@ def question_token(question):
 #print(question_token("Comment t'appelles-tu ?"))
 
 
+# Function 2
 def allcorpus(directory):
     """Function that returns all the speeches as a single string"""
     corpus = ''
@@ -607,6 +608,8 @@ def allcorpus(directory):
 
 #print(allcorpus(speeches_directory))
 
+
+# Function 3
 def tokens_in_corpus(token_list, directory):
     """Takes a question as a list of words, tokens, and returns a list of the tokens that are in the corpus (?)"""
     approved_tokens = {}
@@ -616,5 +619,34 @@ def tokens_in_corpus(token_list, directory):
             approved_tokens.add(token_list[i])     # Puts the word from the question into the set if the word is in the corpus
 
 
-
 # Maybe we will need a function to get the tf-idf score of the tokens in each document
+
+
+# Function 4
+def tf_idf_matrix_fix_separated_by_document(directory):
+    """Returns a tf-idf matrix that depends on each independent document"""
+    final = []
+    row = []
+    for speech in os.listdir(directory):
+        final = []
+        path = directory + '/' + speech
+        with open(path, 'r', encoding='utf-8') as file:
+            text = file.read().split()
+
+        tf = calculate_tf(path)
+        idf = calculate_idf(path)
+        doc_words = {}
+        for word in text:
+            if word not in doc_words:
+                doc_words.add(word)
+
+        for word in doc_words:
+            row = []
+            row.append({word: '{:.5}'.format(tf[word]*idf[word])})
+            #print({word: '{:.5}'.format(tf[word]*idf[word])})
+            print(row)
+        final.append(row)
+    return final
+
+
+print(tf_idf_matrix_fix_separated_by_document(speeches_directory))
