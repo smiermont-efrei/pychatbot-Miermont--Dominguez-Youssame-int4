@@ -144,17 +144,6 @@ def calculate_idf(path):
 # for word in [dictionnaire de tous les mots]:
 #    tf_idf[word] = tf[word]*idf[word]          pour un tf_idf général
 
-# Ensuite
-
-def all_tf(directory):
-    for speech in os.listdir(directory):
-        path = directory + '/' + speech
-
-
-
-
-#all_tf(speeches_directory)
-
 
 # Function 7
 def calculate_tf_idf_matrix_all(directory):
