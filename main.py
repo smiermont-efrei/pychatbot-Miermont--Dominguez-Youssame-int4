@@ -569,7 +569,7 @@ def question_token(question):
     return lquestion
 
 # Testing the function :
-#print(question_token("Comment t'appelles-tu ?"))
+#print(question_token("Comment s'appelle-le président ?"))
 
 
 # Function 2
@@ -586,9 +586,9 @@ def allcorpus_text(directory):
 
 # Function 2.1
 def allcorpus_list(directory):
-    """Function that returns all the speeches as a single string."""
+    """Function that returns all the speeches as a list of strings."""
     corpus = []
-    for speech in os.listdir(directory):                    # need to fix to remove weird \n in the text
+    for speech in os.listdir(directory):
         path = directory + '/' + speech
         with open(path, 'r', encoding='utf-8') as file:
             text = file.read()
@@ -667,78 +667,261 @@ def tf_question(question):
 # All part 2 is functional this far
 
 # Funtion 5
-def occurence(directory):
-    """Returns a matrix of words and the number of documents they appear in"""
-    corpus_list = allcorpus_list(directory)
-    speech_voc = []
-    c_voc = []                          # List of vocabulary for each speech as list(set(words))
-    occu = []                           # Matrix of occurences for each word, one text at a time
-    final = []                          # final matrix returned
-    for speech in corpus_list:          # loop of every speech
-        words = speech.split()          # list of every word in the speech
-        for i in range(len(words)):     # fills a list with every word in the order they appear in the text but ends up unused
-            speech_voc.append(words[i])
-        c_voc = []
-        c_voc = list(set(words))  # fills a list with every word once like a set but as a list
+def tf(directory):
+    """Returns a matrix where each speech has a matrix with each word and their number of occurences in the speech, the TF values"""
+    corpus_list = allcorpus_list(directory)         # The text in the form of a list of words
+    final = []
 
-        # Next we do a loop to see how many times the word in the set-list are present in their corresponding text
+    for speech in corpus_list:      # A loop for each speech
+        words = speech.split()
+        speech_voc = []
+        c_voc = list(set(words))
+        occu = []
 
+        # Creating an occurence matrix
         for word in c_voc:
             occu.append([word, 0])
 
+        # Filling the occurence values for this speech
         for word in c_voc:
             if word in words:
                 for i in range(len(occu)):
                     if word == occu[i][0]:
                         occu[i][1] += 1
         final.append(occu)
+
     return final
 
-p = occurence(speeches_directory)
-for i in range(len(p)):
-    print(p)
 
+#p = occurence(speeches_directory)
+#for i in range(len(p)):
+#    print(i)
 
 # Function 5.1
+def occurence_in_docs(directory):
+    final = []
+    speeches = allcorpus_list(directory)
+    speeches_list = []
+    count = 0
+    # Preparing the list of words for each text
+    for speech in speeches:
+        speeches_list.append(speech.split())
+
+    # Making a matrix of all words
+    words = allcorpus_text(directory).split()
+    word_list = set()
+    all_words = []
+    for i in range(len(words)):
+        if words[i] not in word_list:
+            all_words.append([words[i],0])
+            word_list.add(words[i])
+
+    # Changing all_words to have the number of documents each word is present in
+    for target in range(len(all_words)):
+        for speech in speeches_list:
+            if all_words[target][0] in speech:
+                all_words[target][1] += 1
+
+
+    return all_words
+
+
+#o = occurence_in_docs(speeches_directory)
+#print(o)
+#for i in o:
+#    print(i)
+
+# Function 5.2
 def idf_allcorpus(directory):
     """Returns a matrix of the idf that depends on each document"""
     corpus = allcorpus_text(directory).split()
     idf = []
-    nb_docs = 8
-    c_set = set(corpus)                     # list of every word in all the texts
-
+    c_set = list(set(corpus))                     # list of every word in all the texts
     separate_corpus = allcorpus_list(directory)
+    occu = occurence_in_docs(directory)
 
-    for speech in separate_corpus:    # Repeats the process for all speeches
+    # Loop to get each word in the text a tf-idf score
+    for word in c_set:
+        # Repeats the process for all speeches
+        for i in range(len(occu)):
+            if word == occu[i][0]:
+                score = math.log((8/(occu[i][1])) + 1)
+                idf.append([word, score])
+    return idf
+
+
+#idf_allcorpus(speeches_directory)
+
+def tf_idf_allcorpus(directory):
+    """Returns a tf-idf matrix"""
+    idf = idf_allcorpus(directory)
+    tf_m = tf(directory)
+    final = []
+
+    for i in range(len(tf_m)):
         row = []
-        doc_thing = in_doc(speeches_directory)      # we need occurence matrix : [[word, nb of documents where the word is present], ...]
+        for j in range(len(tf_m[i])):
+            for word in idf:
+                if tf_m[i][j][0] == word[0]:
+                    score = tf_m[i][j][1] * word[1]
+                    row.append([word[0], score])
 
-        #print(doc_thing)
-        for word in c_set:                  # Loop to get each word in the text an idf score
-            score = 0 # math.log((nb_docs/in_doc('cleaned')[word]) + 1)     k in_doc returns a dictionary. I need to make a loop "for key, val in in_doc('cleaned').items():"
-                                                                        # and make a list like [[key, val], [key, val],...] (probs very easy once I get it) so I have an adequate list to use
-            row.append([word, score])                                   # because it doesn't run correctly like that. I don't think in_doc is a stable function since it doesn't stop when run here
-        idf.append(row)
-    return idf
+        final.append(row)
+    return final
 
-    #for word, nb in idf_scores.items():
-        #idf_scores[word] = math.log((nb_docs/occurence_numbers[word]) + 1)
-
-idf_allcorpus(speeches_directory)
+#tf_idf_allcorpus(speeches_directory)
 
 
 
+# Function to calculate TF-IDF vector for the question
+def calculate_question_tfidf(directory, question):
+    """Returns the TF-IDF vector of the question"""
+    corpus_words = allcorpus_text(directory).split()
+
+    corpus_tfidf = tf_idf_allcorpus(directory)
+    # Tokenize the question
+    question_words = question_token(question)
+
+    # Initialize TF-IDF vector for the question
+    question_tfidf = {}
+
+    # Calculate TF for each word in the question
+    for word in question_words:
+        tf = question_words.count(word) / len(question_words)
+        # Set TF to 0 for words not in the corpus
+        if word in corpus_words:
+            # Use precalculated IDF from the corpus
+            idf = corpus_tfidf[word]['idf']
+            question_tfidf[word] = tf * idf
+        else:
+            question_tfidf[word] = 0
+
+    return question_tfidf
 
 
-# je fais ça après
-def idf_question(question):
-    """Function that gives each word in the question the idf score it is associated to in the whole corpus"""
-    question = question_token(question)
-    q_set = set()
+# Function to calculate cosine similarity between two vectors
+def cosine_similarity(vector1, vector2):
+    """Returns the cosine similarity between two vectors"""
+    dot_product = sum(vector1[word] * vector2[word] for word in set(vector1) & set(vector2))
+    norm_vector1 = math.sqrt(sum(vector1[word] ** 2 for word in vector1))
+    norm_vector2 = math.sqrt(sum(vector2[word] ** 2 for word in vector2))
 
-    for i in question:  # Makes a set of the words to avoid duplicates
-        q_set.add(i)
+    if norm_vector1 == 0 or norm_vector2 == 0:
+        return 0
 
-    idf = []
+    return dot_product / (norm_vector1 * norm_vector2)
 
-    return idf
+
+# Function to find the most relevant document
+def find_most_relevant_document(question_tfidf, corpus_tfidf_matrix, file_names):
+    """Returns the most relevant document """
+    similarities = {}
+
+    # Calculate cosine similarity with each document in the corpus
+    for file_name, document_tfidf in corpus_tfidf_matrix.items():
+        similarities[file_name] = cosine_similarity(question_tfidf, document_tfidf)
+
+    # Identify the document with the highest similarity
+    most_relevant_document = max(similarities, key=similarities.get)
+
+    # Return the most relevant document name
+    return most_relevant_document
+
+
+# Fonction 6
+def generate_response(question, most_relevant_document):
+    """Returns a response"""
+    # Locate the first occurrence of the word with the highest TF-IDF score in the relevant document
+    # Return the sentence containing the identified word as the answer
+    # Implement your logic here to locate the word and generate the response
+
+    # Step 1: Calculate TF-IDF vector for the question
+    question_tfidf = calculate_question_tfidf(question, corpus_tfidf_matrix, corpus_words)
+
+    # Step 2: Find the most relevant document
+    most_relevant_document = find_most_relevant_document(question_tfidf, corpus_tfidf_matrix, file_names)
+
+    # Step 3: Generate the response
+    response = generate_response(question, most_relevant_document)
+
+    print("Generated Response:", response)
+
+# Example usage
+question = "Peux-tu me dire comment une nation peut-elle prendre soin du climat?"
+corpus_tfidf_matrix = {}  # Replace with your TF-IDF matrix for the corpus
+corpus_words = []  # Replace with the list of words in the corpus
+file_names = []  # Replace with the list of file names in the corpus
+
+
+
+# Function 7
+
+def refine_answer(response, question):
+    """Refines the answer for it to have a proper structure."""
+    # Dictionary of possible text forms and associated model responses
+    question_starters = {"Comment": "Après analyse, {}", "Pourquoi": "Car, {}", "Peux-tu": "Oui, bien sûr! {}"}
+
+    # Capitalizes the first letter of the response
+    refined_response = response.capitalize()
+
+    # Add a period at the end of the response if it doesn't have one
+    if not refined_response.endswith('.'):
+        refined_response += '.'
+
+    # Checks for specific question starters and uses corresponding model responses
+    for starter, model_response in question_starters.items():
+        if question.startswith(starter):
+
+            refined_response = model_response.format(refined_response)
+
+    return refined_response
+
+
+# Example of usage:
+question = "Peux-tu me dire comment une nation peut-elle prendre soin du climat?"
+response = "et je songe bien sûr à françois hollande, faisant oeuvre de précurseur avec l'accord de paris sur le climat et protégeant les français dans un monde frappé par le terrorisme."
+
+# Refine the answer
+refined_response = refine_answer(response, question)
+print("Refined Response:", refined_response)
+
+
+
+
+
+
+
+# Function for Part 1 functionalities
+def part_1_functionalities():
+    # Part one functionalities here
+    print("You selected Part 1 functionalities.")
+    # Code sending to part 1
+
+# Function for chatbot mode
+def chatbot_mode():
+    # Chatbot mode functionalities here
+    print("You selected Chatbot mode.")
+    # Code sending to chatbot functions
+
+
+# Main program
+while True:
+    # Display menu options
+    print("\nMenu:")
+    print("1. Access Part I functionalities")
+    print("2. Access Chatbot mode")
+    print("3. Exit")
+
+    # Get user choice
+    choice = input("Enter your choice (1, 2, or 3): ")
+
+    # Process user choice
+    if choice == "1":
+        part_1_functionalities()
+    elif choice == "2":
+        chatbot_mode()
+    elif choice == "3":
+        print("Exiting the program. Goodbye!")
+        break
+    else:
+        print("Invalid choice. Please enter 1, 2, or 3.")
