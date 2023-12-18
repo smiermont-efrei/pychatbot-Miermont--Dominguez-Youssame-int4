@@ -888,9 +888,6 @@ print("Refined Response:", refined_response)
 
 
 
-
-
-
 # Function for Part 1 functionalities
 def part_1_functionalities():
     # Part one functionalities here
