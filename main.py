@@ -135,11 +135,6 @@ def calculate_idf(path):
     return idf_scores
 
 
-#for speech in os.listdir(speeches_directory):
-    #path = speeches_directory + '/' + speech
-    #print("IDF scores:", calculate_idf(path))
-    #print(in_doc('cleaned'))
-
 
 # TF fix
 
