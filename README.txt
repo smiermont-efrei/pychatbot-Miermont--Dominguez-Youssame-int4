@@ -7,5 +7,4 @@ dependencies to be installed : none
 
 list of known bugs:
 
-- Functions 11 to the end don't work properly yet
-- the main program found at the end hasn't been properly tested yet
+- We have faced many difficulties with the push request on Joy Youssame's side and unfortunately she couldn't type in her functions directly therefore it appears that she didn't make alot of commits. 
